@@ -27,7 +27,7 @@
                 </div>
                 <div id="new" style="display:block">
                     <div>
-                        <label for="number" class="btn">Number of frames</label>
+                        <label for="number" class="btn">Number of points</label>
                         <input type="number" id="numframes" name="numframes">
                     </div>
                     <div>
@@ -69,6 +69,8 @@
                 <kbd>→</kbd> Next point <br>
                 <kbd>←</kbd> Last point <br>
             </fieldset>
+            <div id="colorLegend">
+            </div>
             <canvas id="zoom" width="400" height="200" style="position: absolute; top: 0; left: 0; display: none"></canvas>
             <p id="pointIndicator">Choosing: 0</p>
             <a id="exportJSON" onclick="exportJson(this);" class="btn" style="color: rgb(35, 129, 160)"><i class="icon-download"></i> export json</a>

@@ -1,6 +1,6 @@
 body {
     font-family: sans-serif;
-    line-height: 3em;
+    line-height: 2em;
 }
 
 header {
@@ -112,8 +112,36 @@ button {
 input[type=number] {
     border: none;
     padding: 15px 32px;
-    width: 5vh;
     text-align: centered;
+}
+
+#specificframe {
+    float: left;
+}
+
+.dot {
+    height: 25px;
+    width: 25px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    line-height: 1em;
+    vertical-align: middle;
+}
+
+p {
+    display: inline-block;
+    padding: 1em;
+    vertical-align: middle;
+    line-height: 1em;
+}
+
+#colorLegend {
+    margin-left: 5%;
+
+    margin-right: 5%;
+    width: 30%;
+    float: right;
 }
 
 kbd {

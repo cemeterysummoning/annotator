@@ -108,6 +108,20 @@ function init() {
             }
         }
 
+        let color_legend = document.getElementById("colorLegend");
+        for (let i = 0; i < colors.length; i++) {
+            let temp_dot = document.createElement("span")
+            temp_dot.className = "dot"
+            temp_dot.style.backgroundColor = colors[i]
+            let temp_div = document.createElement("div")
+            temp_div.appendChild(temp_dot)
+            let temp_text = document.createElement("p")
+            temp_text.textContent = `Point ${i}`
+            temp_div.appendChild(temp_dot)
+            temp_div.appendChild(temp_text);
+            color_legend.appendChild(temp_div);
+        }
+
         put_image(0);
     })
 }
