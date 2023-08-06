@@ -5,46 +5,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Annotator</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
+<header>
+    Annotator
+</header>
 
 <body>
-    <style>
-        #zoom {
-            border: 1px black solid;
-            box-shadow: 5px 5px 10px #1e1e1e;
-        }
-    </style>
-
-    <div id="upload">
-        <h1>Upload video</h1>
-        <input type="file" id="file" name="file">
-        <input type="file" id="json" name="json">
-        <input type="number" id="maskradius" name="maskradius" placeholder="Mask Radius">
-        <input type="number" id="maskcenterx" name="maskcenterx" placeholder="Mask Center, x">
-        <input type="number" id="maskcentery" name="maskcentery" placeholder="Mask Center, y">
-        <br>
-        <br>
-        <input type="button" value="Submit" onclick="submit()">
+    <div id="main">
         
-    </div>
-
-    <div id="collection" style="display: none">
-        <p id="header">Gathering frames...</p>
-        <video id="video" width="800" src="test1.mp4" autoplay muted></video>
-        <button id="moveon" style="display: none">Move on</button>
-    </div>
-
-    <div id="annotate" style="display: none">
-        <input type="number" id="requestframe" type="text">
-        <button id="back">back</button> <button id="next">next</button>
-        <br> <br>
-        <canvas id="specificframe" width="800" height="450" placeholder="frame number here"></canvas>
-        <canvas id="zoom" width="400" height="200" style="position: absolute; top: 0; left: 0; display: none"></canvas>
-        <div id="pointcontainer">
-        <br>
-        <br>
-
-        <a id="exportJSON" onclick="exportJson(this);" class="btn" style="color: rgb(35, 129, 160)"><i class="icon-download"></i> export json</a>
+        <div id="upload">
+            <div id="container">
+                <label class="switch">
+                    <input type="checkbox" onclick="switchInputType()">
+                    <span class="slider round"></span>
+                </label>
+                <h1 id="headerlabel">Upload video</h1>
+                <div>
+                    <label for="file" class="btn">Select video</label>
+                    <input type="file" id="file" name="file">
+                </div>
+                <div id="new" style="display:block">
+                    <div>
+                        <label for="number" class="btn">Number of frames</label>
+                        <input type="number" id="numframes" name="numframes">
+                    </div>
+                    <div>
+                        <label class="btn">Dish mask details</label>
+                        <input type="number" id="maskradius" name="maskradius" placeholder="Mask Radius">
+                        <input type="number" id="maskcenterx" name="maskcenterx" placeholder="Mask Center, x">
+                        <input type="number" id="maskcentery" name="maskcentery" placeholder="Mask Center, y">
+                    </div>
+                    <input type="button" value="Submit" class="submitButton" onclick="newsubmit()">
+                </div>
+                
+                <div id="returning" style="display:none">
+                    <div>
+                        <label for="json" class="btn">Select previous data</label>
+                        <input type="file" id="json" name="json">
+                    </div>
+                    <input type="button" value="Submit" class="submitButton" onclick="returningsubmit()">
+                </div>
+            </div id="container">
+            
+        </div>
+    
+        <div id="collection" style="display: none">
+            <p id="header">Gathering frames...</p>
+            <video id="video" width="800" src="test1.mp4" autoplay muted></video>
+            <button id="moveon" style="display: none">Move on</button>
+        </div>
+    
+        <div id="annotate" style="display: none">
+            <button id="back">←</button><input type="number" id="requestframe" type="text"><button id="next">→</button>
+            <br> <br>
+            <canvas id="specificframe" width="800" height="450" placeholder="frame number here"></canvas>
+            <fieldset>
+                <legend>
+                    Keybinds
+                </legend>
+                <kbd>Space</kbd> Next frame <br>
+                <kbd>b</kbd> Last frame <br>
+                <kbd>→</kbd> Next point <br>
+                <kbd>←</kbd> Last point <br>
+            </fieldset>
+            <canvas id="zoom" width="400" height="200" style="position: absolute; top: 0; left: 0; display: none"></canvas>
+            <p id="pointIndicator">Choosing: 0</p>
+            <a id="exportJSON" onclick="exportJson(this);" class="btn" style="color: rgb(35, 129, 160)"><i class="icon-download"></i> export json</a>
+        </div>
     </div>
 
     <script src="frames.js">

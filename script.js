@@ -1,11 +1,8 @@
-let video, temp, ctx_temp;
-let quit_reception = false
-let framecount;
+let video;
 let requested_frames = document.getElementById("specificframe");
 let requested_ctx = requested_frames.getContext("2d");
 let request_input = document.getElementById("requestframe");
 let moveon = document.getElementById("moveon");
-let annotation_info = []
 let back = document.getElementById("back");
 let next = document.getElementById("next");
 let current_frame = 0;
@@ -14,12 +11,45 @@ let zoom = document.getElementById("zoom")
 let zoomctx = zoom.getContext("2d")
 let radius;
 let center;
-let point_container = document.getElementById("pointcontainer")
-
+let colors = []
 let final_data = []
 let frames = [];
+let current_point = 0;
 
-function submit() {
+function getRandomColor() {
+    let letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+function returningsubmit() {
+    let file_json = document.getElementById("json").files;
+    video = document.getElementById("video");
+    if (file_json.length != 0) {
+        
+        let fileRead = new FileReader();
+        fileRead.onload = function(e) {
+            let content = e.target.result;
+            let intern = JSON.parse(content);
+            final_data = intern.data;
+            colors = intern.frameColors;
+            radius = intern.frameRadius;
+            center = intern.frameCenter;
+        }
+        fileRead.readAsText(file_json[0])
+        document.getElementById("collection").style.display = "block";
+        document.getElementById("upload").style.display = "none"
+
+        init();
+    } else {
+        alert("Must choose a file for previous data dump")
+    }
+}
+
+function newsubmit() {
     document.getElementById("upload").style.display = "none"
     
     video = document.getElementById("video");
@@ -28,24 +58,20 @@ function submit() {
         alert("Must upload a file")
     } else {
         document.getElementById("collection").style.display = "block";
+        console.log(document.getElementById("collection").style.display)
         document.getElementById("video").src = URL.createObjectURL(input.files[0]);
         radius = document.getElementById("maskradius").value;
         center = [document.getElementById("maskcenterx").value, document.getElementById("maskcentery").value]
-
-        let file_json = document.getElementById("json").files;
-
-        if (file_json.length != 0) {
-            
-            let fileRead = new FileReader();
-            fileRead.onload = function(e) {
-                let content = e.target.result;
-                let intern = JSON.parse(content);
-                final_data = intern.data;
-
+        
+        if (!document.getElementById("numframes").value) {
+            alert("Must choose a number of frames")
+        } else {
+            let numframes = document.getElementById("numframes").value
+            for (let i = 0; i < numframes; i++) {
+                colors.push(getRandomColor())
             }
-            fileRead.readAsText(file_json[0])
-        } 
-
+            console.log(colors);
+        }
         init();
     }
 }
@@ -54,7 +80,7 @@ function init() {
     
     video = document.getElementById("video");
 
-    VideoToFrames.getFrames(video.src, 30, VideoToFramesMethod.fps).then(function(frames_data) {
+    VideoToFrames.getFrames(video.src, 1, VideoToFramesMethod.fps).then(function(frames_data) {
         frames_data.forEach(function (frame) {
             frames.push(frame);
         });
@@ -68,16 +94,20 @@ function init() {
         requested_frames.width = frames[0].width
         requested_frames.height = frames[0].height
         
-        
         if (final_data.length != frames.length) {
 
             for (let i = final_data.length; i < frames.length; i++) {
-                            final_data.push({
-                                frame: i,
-                                coords: []
-                            })
-                        }
+                let temp_arr = []
+                for (let i = 0; i < colors.length; i++) {
+                    temp_arr.push([0, 0])
+                }
+                final_data.push({
+                    frame: i,
+                    coords: temp_arr
+                })
+            }
         }
+
         put_image(0);
     })
 }
@@ -105,6 +135,7 @@ function next_frame() {
         
     }
 }
+
 function back_frame() {
     current_frame = parseInt(request_input.value) - 1
     if (current_frame < 0) {
@@ -114,6 +145,7 @@ function back_frame() {
         put_image(current_frame)
     }
 }
+
 back.addEventListener("click", function() {
     back_frame();
 })
@@ -143,12 +175,9 @@ function put_image(index) {
     requested_ctx.fill();
 
 
-    requested_ctx.fillStyle = "#ff0074"
-    for (let i = 0; i < final_data[index].coords.length; i++) {
-        point_container.innerHTML += `
-            <div class="point" onclick="remove_point(this)">❌ ${i}. (${final_data[index].coords[i][0]}, ${final_data[index].coords[i][1]})</div>
-        `
-        requested_ctx.fillRect(final_data[index].coords[i][0], final_data[index].coords[i][1], 3, 3);
+    for (let i = 0; i < colors.length; i++) {
+        requested_ctx.fillStyle = colors[i]
+        requested_ctx.fillRect(final_data[index].coords[i][0], final_data[index].coords[i][1], 5, 5);
     }
 
 }
@@ -181,17 +210,31 @@ function getMousePosition(canvas, event) {
     let rect = canvas.getBoundingClientRect();
     let x = event.clientX - rect.left;
     let y = event.clientY - rect.top;
+    final_data[current_frame].coords[current_point] = [x, y];
+    document.getElementById("pointIndicator").innerText = `Choosing: ${(current_point + 1) % colors.length}`
     console.log(`Frame: ${current_frame}
                 Coordinate x: ${x}
                 Coordinate y: ${y}`);
-    final_data[current_frame].coords.push([x, y]);
 
-    point_container.innerHTML += `
-            <div class="point" onclick="remove_point(this)">❌ ${final_data[current_frame].coords.length - 1}. (${x}, ${y})</div>
-        `
-    requested_ctx.fillStyle = "#ff0074"
-    requested_ctx.fillRect(x, y, 3, 3);
+    requested_ctx.fillStyle = colors[current_point]
+    requested_ctx.fillRect(x, y, 5, 5);
+    put_image(current_frame);
+    current_point = (current_point + 1) % colors.length;
 }
+
+window.addEventListener('keydown', event => {
+    if (event.code === "ArrowRight") {
+        current_point = (current_point + 1) % colors.length;
+        document.getElementById("pointIndicator").innerText = `Choosing: ${current_point}`
+    } else if (event.code === "ArrowLeft") {
+        if (current_point > 0) {
+            current_point = (current_point - 1) % colors.length;
+        } else {
+            current_point = colors.length - 1;
+        }
+        document.getElementById("pointIndicator").innerText = `Choosing: ${current_point}`
+    }
+})
 
 function remove_point(element) {
     let num = parseInt(element.textContent.split(" ")[1])
@@ -203,9 +246,25 @@ function exportJson(link) {
     let final_obj = {
         frameCenter: center,
         frameRadius: radius, 
-        data: final_data
+        data: final_data,
+        frameColors: colors,
     }
     let data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(final_obj));
     link.setAttribute("href", "data:" + data);
     link.setAttribute("download", "data.json");
+}
+
+function switchInputType() {
+    let newStyle = document.getElementById("new")
+    let returningStyle = document.getElementById("returning")
+
+    if (newStyle.style.display == "block") {
+        newStyle.style.display = "none";
+        returningStyle.style.display = "block"
+        document.getElementById("headerlabel").text = "Upload existing data"
+    } else if (newStyle.style.display == "none") {
+        newStyle.style.display = "block";
+        returningStyle.style.display = "none"
+        document.getElementById("headerlabel").text = "Upload new video"
+    }
 }
