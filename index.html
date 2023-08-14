@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <header>
-    Annotator
+    MagnetoSuture Annotator
 </header>
 
 <body>
@@ -24,12 +24,17 @@
                 <div>
                     <label for="file" class="btn">Select video</label>
                     <input type="file" id="file" name="file">
+
+                    <label for="framenum" class="btn">Choose frame rate</label>
+                    <input type="number" id="framenum" name="framenum">
                 </div>
+                <br>
                 <div id="new" style="display:block">
                     <div>
                         <label for="number" class="btn">Number of points</label>
                         <input type="number" id="numframes" name="numframes">
                     </div>
+                    <br>
                     <div>
                         <label class="btn">Dish mask details</label>
                         <input type="number" id="maskradius" name="maskradius" placeholder="Mask Radius">
@@ -52,7 +57,7 @@
     
         <div id="collection" style="display: none">
             <p id="header">Gathering frames...</p>
-            <video id="video" width="800" src="test1.mp4" autoplay muted></video>
+            <video id="video" width="800" src="" autoplay muted></video>
             <button id="moveon" style="display: none">Move on</button>
         </div>
     

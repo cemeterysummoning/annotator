@@ -15,15 +15,15 @@ let colors = []
 let final_data = []
 let frames = [];
 let current_point = 0;
+let framerate = 1;
 
 function getRandomColor() {
-    let letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
+    let h = Math.floor(Math.random() * 360);
+    let s = Math.floor(Math.random() * 80) + 20;
+    let l = Math.floor(Math.random() * 70) + 10;
+    return `hsl(${h}, ${s}%, ${l}%)`;
 }
+  
 
 function returningsubmit() {
     let file_json = document.getElementById("json").files;
@@ -42,6 +42,7 @@ function returningsubmit() {
         fileRead.readAsText(file_json[0])
         document.getElementById("collection").style.display = "block";
         document.getElementById("upload").style.display = "none"
+        framerate = document.getElementById("framenum").value; 
 
         init();
     } else {
@@ -58,13 +59,13 @@ function newsubmit() {
         alert("Must upload a file")
     } else {
         document.getElementById("collection").style.display = "block";
-        console.log(document.getElementById("collection").style.display)
         document.getElementById("video").src = URL.createObjectURL(input.files[0]);
+        
         radius = document.getElementById("maskradius").value;
         center = [document.getElementById("maskcenterx").value, document.getElementById("maskcentery").value]
         
         if (!document.getElementById("numframes").value) {
-            alert("Must choose a number of frames")
+            alert("Must choose a number of points")
         } else {
             let numframes = document.getElementById("numframes").value
             for (let i = 0; i < numframes; i++) {
@@ -72,6 +73,8 @@ function newsubmit() {
             }
             console.log(colors);
         }
+        framerate = document.getElementById("framenum").value; 
+
         init();
     }
 }
@@ -79,7 +82,6 @@ function newsubmit() {
 function init() {
     
     video = document.getElementById("video");
-
     VideoToFrames.getFrames(video.src, 1, VideoToFramesMethod.fps).then(function(frames_data) {
         frames_data.forEach(function (frame) {
             frames.push(frame);
@@ -169,6 +171,7 @@ next.addEventListener("click", function() {
 })
 
 document.addEventListener('keydown', (event) => {
+    event.preventDefault();
     if (event.code === "Space") {
         next_frame()
     } else if (event.code === "KeyB") {
@@ -191,7 +194,7 @@ function put_image(index) {
 
     for (let i = 0; i < colors.length; i++) {
         requested_ctx.fillStyle = colors[i]
-        requested_ctx.fillRect(final_data[index].coords[i][0], final_data[index].coords[i][1], 5, 5);
+        requested_ctx.fillRect(final_data[index].coords[i][0] - 2, final_data[index].coords[i][1] - 2, 4, 4);
     }
 
 }
@@ -229,9 +232,8 @@ function getMousePosition(canvas, event) {
     console.log(`Frame: ${current_frame}
                 Coordinate x: ${x}
                 Coordinate y: ${y}`);
-
     requested_ctx.fillStyle = colors[current_point]
-    requested_ctx.fillRect(x, y, 5, 5);
+    requested_ctx.fillRect(x, y, 4, 4);
     put_image(current_frame);
     current_point = (current_point + 1) % colors.length;
 }

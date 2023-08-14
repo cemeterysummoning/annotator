@@ -113,6 +113,7 @@ input[type=number] {
     border: none;
     padding: 15px 32px;
     text-align: centered;
+    background-color: rgb(218, 218, 218);
 }
 
 #specificframe {
