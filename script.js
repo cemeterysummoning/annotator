@@ -171,8 +171,9 @@ next.addEventListener("click", function() {
 })
 
 document.addEventListener('keydown', (event) => {
-    event.preventDefault();
+    
     if (event.code === "Space") {
+        event.preventDefault();
         next_frame()
     } else if (event.code === "KeyB") {
         back_frame()
