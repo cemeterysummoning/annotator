@@ -16,6 +16,7 @@ let final_data = []
 let frames = [];
 let current_point = 0;
 let framerate = 1;
+let usingDishMask = false
 
 function getRandomColor() {
     let h = Math.floor(Math.random() * 360);
@@ -23,7 +24,6 @@ function getRandomColor() {
     let l = Math.floor(Math.random() * 70) + 10;
     return `hsl(${h}, ${s}%, ${l}%)`;
 }
-  
 
 function returningsubmit() {
     let file_json = document.getElementById("json").files;
@@ -63,6 +63,7 @@ function newsubmit() {
         
         radius = document.getElementById("maskradius").value;
         center = [document.getElementById("maskcenterx").value, document.getElementById("maskcentery").value]
+        usingDishMask = radius ? true : false
         
         if (!document.getElementById("numframes").value) {
             alert("Must choose a number of points")
@@ -71,7 +72,6 @@ function newsubmit() {
             for (let i = 0; i < numframes; i++) {
                 colors.push(getRandomColor())
             }
-            console.log(colors);
         }
         framerate = document.getElementById("framenum").value; 
 
@@ -82,7 +82,7 @@ function newsubmit() {
 function init() {
     
     video = document.getElementById("video");
-    VideoToFrames.getFrames(video.src, 1, VideoToFramesMethod.fps).then(function(frames_data) {
+    VideoToFrames.getFrames(video.src, framerate, VideoToFramesMethod.fps).then(function(frames_data) {
         frames_data.forEach(function (frame) {
             frames.push(frame);
         });
@@ -186,12 +186,13 @@ function put_image(index) {
         points[0].parentNode.removeChild(points[0])
     }
     requested_ctx.putImageData(frames[index], 0, 0);
-    requested_ctx.fillStyle = "black"
-    requested_ctx.beginPath();
-    requested_ctx.arc(center[0], center[1], radius,0, 2 * Math.PI, true);
-    requested_ctx.rect(0, 0, requested_frames.width, requested_frames.height);
-    requested_ctx.fill();
-
+    if (usingDishMask) {
+        requested_ctx.fillStyle = "black"
+        requested_ctx.beginPath();
+        requested_ctx.arc(center[0], center[1], radius,0, 2 * Math.PI, true);
+        requested_ctx.rect(0, 0, requested_frames.width, requested_frames.height);
+        requested_ctx.fill();
+    }
 
     for (let i = 0; i < colors.length; i++) {
         requested_ctx.fillStyle = colors[i]
@@ -263,6 +264,7 @@ function exportJson(link) {
     let final_obj = {
         frameCenter: center,
         frameRadius: radius, 
+        frameRate: framerate,
         data: final_data,
         frameColors: colors,
     }
@@ -283,5 +285,14 @@ function switchInputType() {
         newStyle.style.display = "block";
         returningStyle.style.display = "none"
         document.getElementById("headerlabel").text = "Upload new video"
+    }
+}
+
+function selectDishMask() {
+    let dishDetails = document.getElementById("dishmask")
+    if (dishDetails.style.display == "none") {
+        dishDetails.style.display = "block"
+    } else if (dishDetails.style.display == "block") {
+        dishDetails.style.display = "none"
     }
 }
