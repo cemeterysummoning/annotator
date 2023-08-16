@@ -38,6 +38,7 @@ function returningsubmit() {
             colors = intern.frameColors;
             radius = intern.frameRadius;
             center = intern.frameCenter;
+            usingDishMask = radius ? true : false
         }
         fileRead.readAsText(file_json[0])
         document.getElementById("collection").style.display = "block";
