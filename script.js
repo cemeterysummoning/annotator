@@ -30,6 +30,8 @@ function getRandomColor() {
 function returningsubmit() {
     let file_json = document.getElementById("json").files;
     video = document.getElementById("video");
+    let input = document.getElementById("file");
+
     if (file_json.length != 0) {
         
         let fileRead = new FileReader();
@@ -43,6 +45,8 @@ function returningsubmit() {
             filename = intern.name;
             usingDishMask = radius ? true : false
         }
+
+        document.getElementById("video").src = URL.createObjectURL(input.files[0]);
         fileRead.readAsText(file_json[0])
         document.getElementById("collection").style.display = "block";
         document.getElementById("upload").style.display = "none"
