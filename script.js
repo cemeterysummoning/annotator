@@ -178,6 +178,10 @@ document.addEventListener('keydown', (event) => {
         next_frame()
     } else if (event.code === "KeyB") {
         back_frame()
+    } else if (event.code === "KeyZ") {
+        let prevPoints = final_data[current_frame - 1].coords;
+        final_data[current_frame].coords = prevPoints;
+        put_image(current_frame)
     }
 })
 
