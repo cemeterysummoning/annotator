@@ -7,3 +7,5 @@ Videos must be in .mp4 format under an h.264 encoding. `ffmpeg` can be used to a
  ```
 
 The frame separator script is credited to this [github repository](https://github.com/bertyhell/video-to-frames).
+
+If there are too many requested frames, the application may crash. I've provided the `split.sh` shell file, which splits each video into 10-second pieces, which may reduce the load.
