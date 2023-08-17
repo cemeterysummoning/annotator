@@ -17,6 +17,8 @@ let frames = [];
 let current_point = 0;
 let framerate = 1;
 let usingDishMask = false
+let filename;
+let video_dim;
 
 function getRandomColor() {
     let h = Math.floor(Math.random() * 360);
@@ -38,6 +40,7 @@ function returningsubmit() {
             colors = intern.frameColors;
             radius = intern.frameRadius;
             center = intern.frameCenter;
+            filename = intern.name;
             usingDishMask = radius ? true : false
         }
         fileRead.readAsText(file_json[0])
@@ -61,7 +64,7 @@ function newsubmit() {
     } else {
         document.getElementById("collection").style.display = "block";
         document.getElementById("video").src = URL.createObjectURL(input.files[0]);
-        
+        filename = input.value.split("\\").pop()
         radius = document.getElementById("maskradius").value;
         center = [document.getElementById("maskcenterx").value, document.getElementById("maskcentery").value]
         usingDishMask = radius ? true : false
@@ -96,6 +99,7 @@ function init() {
         request_input.value = current_frame;
         requested_frames.width = frames[0].width
         requested_frames.height = frames[0].height
+        video_dim = [frames[0].width, frames[0].height]
         
         if (final_data.length != frames.length) {
 
@@ -180,7 +184,9 @@ document.addEventListener('keydown', (event) => {
         back_frame()
     } else if (event.code === "KeyZ") {
         let prevPoints = final_data[current_frame - 1].coords;
-        final_data[current_frame].coords = prevPoints;
+        for (i = 0; i < prevPoints.length; i++) {
+            final_data[current_frame].coords[i] = [...prevPoints[i]]
+        }
         put_image(current_frame)
     }
 })
@@ -267,11 +273,13 @@ function remove_point(element) {
 
 function exportJson(link) {
     let final_obj = {
+        name: filename,
+        dimension: video_dim,
         frameCenter: center,
         frameRadius: radius, 
         frameRate: framerate,
-        data: final_data,
         frameColors: colors,
+        data: final_data,
     }
     let data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(final_obj));
     link.setAttribute("href", "data:" + data);
