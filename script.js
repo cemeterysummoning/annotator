@@ -256,10 +256,10 @@ function getMousePosition(canvas, event) {
 }
 
 window.addEventListener('keydown', event => {
-    if (event.code === "ArrowRight") {
+    if (event.code === "ArrowRight" || event.code === "KeyD") {
         current_point = (current_point + 1) % colors.length;
         document.getElementById("pointIndicator").innerText = `Choosing: ${current_point}`
-    } else if (event.code === "ArrowLeft") {
+    } else if (event.code === "ArrowLeft" || event.code === "KeyA") {
         if (current_point > 0) {
             current_point = (current_point - 1) % colors.length;
         } else {
