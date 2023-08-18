@@ -141,7 +141,7 @@ request_input.addEventListener("keypress", function(e) {
     if (e.key === "Enter") {
         e.preventDefault();
         current_frame = parseInt(request_input.value)
-        requested_ctx.putImageData(frames[current_frame], 0, 0)
+        put_image(current_frame);
     }
 })
 
@@ -211,7 +211,7 @@ function put_image(index) {
 
     for (let i = 0; i < colors.length; i++) {
         requested_ctx.fillStyle = colors[i]
-        requested_ctx.fillRect(final_data[index].coords[i][0] - 2, final_data[index].coords[i][1] - 2, 4, 4);
+        requested_ctx.fillRect(final_data[index].coords[i][0] - 3, final_data[index].coords[i][1] - 3, 6, 6);
     }
 
 }
