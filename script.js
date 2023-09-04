@@ -256,23 +256,23 @@ function getMousePosition(canvas, event) {
 }
 
 window.addEventListener('keydown', event => {
-    if (event.code === "ArrowRight") {
+    if (event.code === "KeyD") {
         current_point = (current_point + 1) % colors.length;
         document.getElementById("pointIndicator").innerText = `Choosing: ${current_point}`
-    } else if (event.code === "ArrowLeft") {
+    } else if (event.code === "KeyA") {
         if (current_point > 0) {
             current_point = (current_point - 1) % colors.length;
         } else {
             current_point = colors.length - 1;
         }
         document.getElementById("pointIndicator").innerText = `Choosing: ${current_point}`
-    } else if (event.code === "KeyD") {
+    } else if (event.code === "ArrowRight") {
         move_right();
-    } else if (event.code === "KeyA") {
+    } else if (event.code === "ArrowLeft") {
         move_left();
-    } else if (event.code === "KeyS") {
+    } else if (event.code === "ArrowUp") {
         move_up();
-    } else if (event.code === "KeyW") {
+    } else if (event.code === "ArrowDown") {
         move_down();
     }
 })
