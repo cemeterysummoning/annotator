@@ -270,9 +270,9 @@ window.addEventListener('keydown', event => {
         move_right();
     } else if (event.code === "KeyA") {
         move_left();
-    } else if (event.code === "KeyW") {
-        move_up();
     } else if (event.code === "KeyS") {
+        move_up();
+    } else if (event.code === "KeyW") {
         move_down();
     }
 })
@@ -332,10 +332,7 @@ function move_up() {
 function move_down() {
     for (let i = 0; i < final_data[current_frame].coords.length; i++) {
         final_data[current_frame].coords[i][1] -= 1;
-        console.log(final_data[current_frame].coords[i][1])
     }
-    console.log("down")
-    console.log(final_data[current_frame].coords)
     put_image(current_frame)
 }
 
