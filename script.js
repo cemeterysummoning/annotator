@@ -267,8 +267,10 @@ window.addEventListener('keydown', event => {
         }
         document.getElementById("pointIndicator").innerText = `Choosing: ${current_point}`
     } else if (event.code === "ArrowRight") {
+        event.preventDefault();
         move_right();
     } else if (event.code === "ArrowLeft") {
+        event.preventDefault();
         move_left();
     } else if (event.code === "ArrowUp") {
         event.preventDefault();
