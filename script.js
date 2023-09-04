@@ -256,16 +256,24 @@ function getMousePosition(canvas, event) {
 }
 
 window.addEventListener('keydown', event => {
-    if (event.code === "ArrowRight" || event.code === "KeyD") {
+    if (event.code === "ArrowRight") {
         current_point = (current_point + 1) % colors.length;
         document.getElementById("pointIndicator").innerText = `Choosing: ${current_point}`
-    } else if (event.code === "ArrowLeft" || event.code === "KeyA") {
+    } else if (event.code === "ArrowLeft") {
         if (current_point > 0) {
             current_point = (current_point - 1) % colors.length;
         } else {
             current_point = colors.length - 1;
         }
         document.getElementById("pointIndicator").innerText = `Choosing: ${current_point}`
+    } else if (event.code === "KeyD") {
+        move_right();
+    } else if (event.code === "KeyA") {
+        move_left();
+    } else if (event.code === "KeyW") {
+        move_up();
+    } else if (event.code === "KeyS") {
+        move_down();
     }
 })
 
@@ -312,4 +320,32 @@ function selectDishMask() {
     } else if (dishDetails.style.display == "block") {
         dishDetails.style.display = "none"
     }
+}
+
+function move_up() {
+    for (let i = 0; i < final_data[current_frame].coords; i++) {
+        final_data[current_frame].coords[i][1] += 1;
+    }
+    put_image(current_frame)
+}
+
+function move_down() {
+    for (let i = 0; i < final_data[current_frame].coords; i++) {
+        final_data[current_frame].coords[i][1] -= 1;
+    }
+    put_image(current_frame)
+}
+
+function move_right() {
+    for (let i = 0; i < final_data[current_frame].coords; i++) {
+        final_data[current_frame].coords[i][0] += 1;
+    }
+    put_image(current_frame)
+}
+
+function move_left() {
+    for (let i = 0; i < final_data[current_frame].coords; i++) {
+        final_data[current_frame].coords[i][0] -= 1;
+    }
+    put_image(current_frame)
 }
