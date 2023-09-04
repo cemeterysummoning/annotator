@@ -323,28 +323,31 @@ function selectDishMask() {
 }
 
 function move_up() {
-    for (let i = 0; i < final_data[current_frame].coords; i++) {
+    for (let i = 0; i < final_data[current_frame].coords.length; i++) {
         final_data[current_frame].coords[i][1] += 1;
     }
     put_image(current_frame)
 }
 
 function move_down() {
-    for (let i = 0; i < final_data[current_frame].coords; i++) {
+    for (let i = 0; i < final_data[current_frame].coords.length; i++) {
         final_data[current_frame].coords[i][1] -= 1;
+        console.log(final_data[current_frame].coords[i][1])
     }
+    console.log("down")
+    console.log(final_data[current_frame].coords)
     put_image(current_frame)
 }
 
 function move_right() {
-    for (let i = 0; i < final_data[current_frame].coords; i++) {
+    for (let i = 0; i < final_data[current_frame].coords.length; i++) {
         final_data[current_frame].coords[i][0] += 1;
     }
     put_image(current_frame)
 }
 
 function move_left() {
-    for (let i = 0; i < final_data[current_frame].coords; i++) {
+    for (let i = 0; i < final_data[current_frame].coords.length; i++) {
         final_data[current_frame].coords[i][0] -= 1;
     }
     put_image(current_frame)
