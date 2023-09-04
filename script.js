@@ -271,8 +271,10 @@ window.addEventListener('keydown', event => {
     } else if (event.code === "ArrowLeft") {
         move_left();
     } else if (event.code === "ArrowUp") {
+        event.preventDefault();
         move_up();
     } else if (event.code === "ArrowDown") {
+        event.preventDefault();
         move_down();
     }
 })
@@ -324,28 +326,28 @@ function selectDishMask() {
 
 function move_up() {
     for (let i = 0; i < final_data[current_frame].coords.length; i++) {
-        final_data[current_frame].coords[i][1] += 1;
+        final_data[current_frame].coords[i][1] -= 0.5;
     }
     put_image(current_frame)
 }
 
 function move_down() {
     for (let i = 0; i < final_data[current_frame].coords.length; i++) {
-        final_data[current_frame].coords[i][1] -= 1;
+        final_data[current_frame].coords[i][1] += 0.5;
     }
     put_image(current_frame)
 }
 
 function move_right() {
     for (let i = 0; i < final_data[current_frame].coords.length; i++) {
-        final_data[current_frame].coords[i][0] += 1;
+        final_data[current_frame].coords[i][0] += 0.5;
     }
     put_image(current_frame)
 }
 
 function move_left() {
     for (let i = 0; i < final_data[current_frame].coords.length; i++) {
-        final_data[current_frame].coords[i][0] -= 1;
+        final_data[current_frame].coords[i][0] -= 0.5;
     }
     put_image(current_frame)
 }
