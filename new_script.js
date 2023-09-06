@@ -19,7 +19,88 @@ let framerate = 1;
 let usingDishMask = false
 let filename;
 let video_dim;
+let stopped = false;
+let started = false;
+let sourceurl;
 
+async function getVideoTrack() {
+    const video = document.createElement("video");
+    video.crossOrigin = "anonymous";
+    video.src = sourceurl;
+    document.getElementById("collection").append(video);
+    await video.play();
+    const [track] = video.captureStream().getVideoTracks();
+    video.onended = (evt) => track.stop();
+    return track;
+  }
+async function get_frames() {
+    if (window.MediaStreamTrackProcessor) {
+        let stopped = false;
+        const track = await getVideoTrack();
+        const processor = new MediaStreamTrackProcessor(track);
+        const reader = processor.readable.getReader();
+        readChunk();
+
+        function readChunk() {
+            reader.read().then(async({ done, value }) => {
+                if (value) {
+                    const bitmap = await createImageBitmap(value);
+                    const index = frames.length;
+                    frames.push(bitmap);
+                    value.close();
+                }
+                if (!done && !stopped) {
+                    readChunk();
+                } else {
+                    console.log(frames);
+                    let label = document.getElementById("header")
+                    label.textContent = "Frames gathered, total frames: " + frames.length;
+                    moveon.style.display = "block";
+                    request_input.min = 0;
+                    request_input.max = frames.length;
+                    request_input.value = current_frame;
+                    requested_frames.width = frames[0].width
+                    requested_frames.height = frames[0].height
+                    video_dim = [frames[0].width, frames[0].height]
+                    requested_frames.width = video_dim[0]
+                    requested_frames.height = video_dim[1]
+                    
+                    if (final_data.length != frames.length) {
+
+                        for (let i = final_data.length; i < frames.length; i++) {
+                            let temp_arr = []
+                            for (let i = 0; i < colors.length; i++) {
+                                temp_arr.push([0, 0])
+                            }
+                            final_data.push({
+                                frame: i,
+                                coords: temp_arr
+                            })
+                        }
+                    }
+
+                    let color_legend = document.getElementById("colorLegend");
+                    for (let i = 0; i < colors.length; i++) {
+                        let temp_dot = document.createElement("span")
+                        temp_dot.className = "dot"
+                        temp_dot.style.backgroundColor = colors[i]
+                        let temp_div = document.createElement("div")
+                        temp_div.appendChild(temp_dot)
+                        let temp_text = document.createElement("p")
+                        temp_text.textContent = `Point ${i}`
+                        temp_div.appendChild(temp_dot)
+                        temp_div.appendChild(temp_text);
+                        color_legend.appendChild(temp_div);
+                    }
+
+                    put_image(0);
+                }
+            })
+        }
+    } else {
+        console.error("Your browser doesn't support webcodecs yet")
+    }
+}
 function getRandomColor() {
     let h = Math.floor(Math.random() * 360);
     let s = Math.floor(Math.random() * 80) + 20;
@@ -29,7 +110,6 @@ function getRandomColor() {
 
 function returningsubmit() {
     let file_json = document.getElementById("json").files;
-    video = document.getElementById("video");
     let input = document.getElementById("file");
 
     if (file_json.length != 0) {
@@ -46,7 +126,7 @@ function returningsubmit() {
             usingDishMask = radius ? true : false
         }
 
-        document.getElementById("video").src = URL.createObjectURL(input.files[0]);
+        sourceurl = URL.createObjectURL(input.files[0]);
         fileRead.readAsText(file_json[0])
         document.getElementById("collection").style.display = "block";
         document.getElementById("upload").style.display = "none"
@@ -60,14 +140,13 @@ function returningsubmit() {
 
 function newsubmit() {
     document.getElementById("upload").style.display = "none"
-    
-    video = document.getElementById("video");
+
     let input = document.getElementById("file");
     if (input.files.length == 0) {
         alert("Must upload a file")
     } else {
         document.getElementById("collection").style.display = "block";
-        document.getElementById("video").src = URL.createObjectURL(input.files[0]);
+        sourceurl = URL.createObjectURL(input.files[0]);
         filename = input.value.split("\\").pop()
         radius = document.getElementById("maskradius").value;
         center = [document.getElementById("maskcenterx").value, document.getElementById("maskcentery").value]
@@ -90,51 +169,8 @@ function newsubmit() {
 function init() {
     
     video = document.getElementById("video");
-    VideoToFrames.getFrames(video.src, framerate, VideoToFramesMethod.fps).then(function(frames_data) {
-        frames_data.forEach(function (frame) {
-            frames.push(frame);
-        });
-        console.log(frames);
-        let label = document.getElementById("header")
-        label.textContent = "Frames gathered, total frames: " + frames.length;
-        moveon.style.display = "block";
-        request_input.min = 0;
-        request_input.max = frames.length;
-        request_input.value = current_frame;
-        requested_frames.width = frames[0].width
-        requested_frames.height = frames[0].height
-        video_dim = [frames[0].width, frames[0].height]
-        
-        if (final_data.length != frames.length) {
+    get_frames();
 
-            for (let i = final_data.length; i < frames.length; i++) {
-                let temp_arr = []
-                for (let i = 0; i < colors.length; i++) {
-                    temp_arr.push([0, 0])
-                }
-                final_data.push({
-                    frame: i,
-                    coords: temp_arr
-                })
-            }
-        }
-
-        let color_legend = document.getElementById("colorLegend");
-        for (let i = 0; i < colors.length; i++) {
-            let temp_dot = document.createElement("span")
-            temp_dot.className = "dot"
-            temp_dot.style.backgroundColor = colors[i]
-            let temp_div = document.createElement("div")
-            temp_div.appendChild(temp_dot)
-            let temp_text = document.createElement("p")
-            temp_text.textContent = `Point ${i}`
-            temp_div.appendChild(temp_dot)
-            temp_div.appendChild(temp_text);
-            color_legend.appendChild(temp_div);
-        }
-
-        put_image(0);
-    })
 }
 
 request_input.addEventListener("keypress", function(e) {
@@ -200,7 +236,7 @@ function put_image(index) {
     while (points[0]) {
         points[0].parentNode.removeChild(points[0])
     }
-    requested_ctx.putImageData(frames[index], 0, 0);
+    requested_ctx.drawImage(frames[index], 0, 0);
     if (usingDishMask) {
         requested_ctx.fillStyle = "black"
         requested_ctx.beginPath();
