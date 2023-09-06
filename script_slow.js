@@ -90,7 +90,7 @@ function newsubmit() {
 function init() {
     
     video = document.getElementById("video");
-    VideoToFrames.getFrames(video.src, framerate, VideoToFramesMethod.totalFrames).then(function(frames_data) {
+    VideoToFrames.getFrames(video.src, framerate, VideoToFramesMethod.fps).then(function(frames_data) {
         frames_data.forEach(function (frame) {
             frames.push(frame);
         });
