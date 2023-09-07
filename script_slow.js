@@ -237,7 +237,7 @@ requested_frames.addEventListener("mousemove", function(e) {
     zoomctx.lineTo(200 + 10, 100);
     zoomctx.strokeStyle = '#DB14C1';
     zoomctx.stroke()
-    zoom.style.display = "block"
+    // zoom.style.display = "block"
 })
 
 function getMousePosition(canvas, event) {
@@ -350,4 +350,12 @@ function move_left() {
         final_data[current_frame].coords[i][0] -= 0.5;
     }
     put_image(current_frame)
+}
+
+function toggleZoom() {
+    if (zoom.style.display == "block") {
+        zoom.style.display = "none"
+    } else {
+        zoom.style.display = "block";
+    }
 }
