@@ -9,12 +9,16 @@ let current_frame = 0;
 let imageContainer = document.getElementById("specificframe")
 let zoom = document.getElementById("zoom")
 let zoomctx = zoom.getContext("2d")
+let agents = [];
+let focused_agent = 0;
 let radius;
 let center;
-let colors = []
+let colors = ["#32a852", "#b52b2b", "#159ca1", "#f0823e"]
 let final_data = []
 let frames = [];
 let current_point = 0;
+let current_agent = 0;
+let agent_points = []
 let framerate = 1;
 let usingDishMask = false
 let filename;
@@ -43,6 +47,7 @@ function returningsubmit() {
             radius = intern.frameRadius;
             center = intern.frameCenter;
             filename = intern.name;
+            agents = intern.agents;
             usingDishMask = radius ? true : false
         }
 
@@ -73,19 +78,37 @@ function newsubmit() {
         center = [document.getElementById("maskcenterx").value, document.getElementById("maskcentery").value]
         usingDishMask = radius ? true : false
         
-        if (!document.getElementById("numframes").value) {
-            alert("Must choose a number of points")
-        } else {
-            let numframes = document.getElementById("numframes").value
-            for (let i = 0; i < numframes; i++) {
-                colors.push(getRandomColor())
-            }
-        }
+        if (!document.getElementById("numagents").value) {
+            alert("Must choose a number of agents")
+        } 
         framerate = document.getElementById("framenum").value; 
 
         init();
     }
 }
+let agent_nums = 0;
+document.getElementById("numagents").addEventListener("change", function() {
+    agent_nums = document.getElementById("numagents").value
+    let content_div = document.getElementById("agentinfo");
+    content_div.innerHTML = ""
+
+    for (let i = 0; i < document.getElementById("numagents").value; i++) {
+        let temp_div = document.createElement("div");
+        let agent_type = document.createElement("select")
+        agent_type.id = `agent${i}`
+        let grip_option = document.createElement("option")
+        grip_option.value = "Gripper"
+        grip_option.innerText = "Gripper"
+        let needle_option = document.createElement("option")
+        needle_option.value = "Needle"
+        needle_option.innerText = "Needle"
+        agent_type.appendChild(grip_option)
+        agent_type.appendChild(needle_option)
+        temp_div.appendChild(agent_type)
+        content_div.appendChild(temp_div)
+        content_div.append(document.createElement("br"))
+    }
+})
 
 function init() {
     
@@ -104,39 +127,60 @@ function init() {
         requested_frames.width = frames[0].width
         requested_frames.height = frames[0].height
         video_dim = [frames[0].width, frames[0].height]
+
+        for (let i = 0; i < agent_nums; i++) {
+            let type = document.getElementById(`agent${i}`).value;
+            agents.push({
+                agent_id: i,
+                agent_type: type,
+                agent_name: `${i}_${type}`
+            })
+        }
+        agent_points = Array(frames.length).fill(Array(agent_nums * 2).fill([0, 0]))
+        document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${current_point}`
+
         
         if (final_data.length != frames.length) {
 
             for (let i = final_data.length; i < frames.length; i++) {
-                let temp_arr = []
-                for (let i = 0; i < colors.length; i++) {
-                    temp_arr.push([0, 0])
+                let temp_obj = {}
+                for (let j = 0; j < agents.length; j++) {
+                    let name = agents[j].agent_name
+                    if (agents[j].agent_type == "Gripper") {
+                        temp_obj[name] = Array(11).fill([0, 0])
+                    } else {
+                        temp_obj[name] = Array(5).fill([0, 0])
+                    }
                 }
                 final_data.push({
                     frame: i,
-                    coords: temp_arr
+                    coords: temp_obj
                 })
             }
+
         }
 
         let color_legend = document.getElementById("colorLegend");
-        for (let i = 0; i < colors.length; i++) {
-            let temp_dot = document.createElement("span")
-            temp_dot.className = "dot"
-            temp_dot.style.backgroundColor = colors[i]
-            let temp_div = document.createElement("div")
-            temp_div.appendChild(temp_dot)
-            let temp_text = document.createElement("p")
-            temp_text.textContent = `Point ${i}`
-            temp_div.appendChild(temp_dot)
-            temp_div.appendChild(temp_text);
-            color_legend.appendChild(temp_div);
+        for (let i = 0; i < agents.length; i++) {
+            for (let j = 0; j < 2; j++) {
+                let temp_dot = document.createElement("span")
+                temp_dot.className = "dot"
+                temp_dot.style.backgroundColor = colors[2 * i + j]
+                let temp_div = document.createElement("div")
+                temp_div.appendChild(temp_dot)
+                let temp_text = document.createElement("p")
+                temp_text.textContent = `${agents[i].agent_name}, Point ${j}`
+                temp_div.appendChild(temp_dot)
+                temp_div.appendChild(temp_text);
+                color_legend.appendChild(temp_div);
+            }
         }
 
         put_image(0);
     })
 }
 
+// these are also fine
 request_input.addEventListener("keypress", function(e) {
     if (e.key === "Enter") {
         e.preventDefault();
@@ -151,7 +195,10 @@ moveon.addEventListener("click", function() {
 })
 
 function next_frame() {
+    computePoints();
     current_frame = parseInt(request_input.value) + 1
+    current_agent = 0;
+    current_point = 0
     if (current_frame >= frames.length) {
         alert("No more frames left");
     } else {
@@ -162,6 +209,9 @@ function next_frame() {
 }
 
 function back_frame() {
+    computePoints();
+    current_agent = 0;
+    current_point = 0
     current_frame = parseInt(request_input.value) - 1
     if (current_frame < 0) {
         alert("No more frames left");
@@ -196,10 +246,6 @@ document.addEventListener('keydown', (event) => {
 })
 
 function put_image(index) {
-    let points = document.getElementsByClassName("point")
-    while (points[0]) {
-        points[0].parentNode.removeChild(points[0])
-    }
     requested_ctx.putImageData(frames[index], 0, 0);
     if (usingDishMask) {
         requested_ctx.fillStyle = "black"
@@ -208,10 +254,45 @@ function put_image(index) {
         requested_ctx.rect(0, 0, requested_frames.width, requested_frames.height);
         requested_ctx.fill();
     }
+    
+    for (let i = 0; i < agent_nums; i++) {
+        let temp_data = final_data[index].coords[agents[i].agent_name]
+        if (agents[i].agent_type === "Gripper") {
+            requested_ctx.fillStyle = colors[i * 2]
+            let coord_1_x = temp_data[0][0]
+            let coord_1_y = temp_data[0][1]
+            requested_ctx.fillRect(coord_1_x - 3, coord_1_y - 3, 6, 6);
+    
+            requested_ctx.fillStyle = colors[i * 2 + 1]
+            let coord_2_x = temp_data[1][0]
+            let coord_2_y = temp_data[1][1]
+            requested_ctx.fillRect(coord_2_x - 3, coord_2_y - 3, 6, 6);
+    
+            for (let j = 2; j < temp_data.length; j++) {
+                let coord_x = temp_data[j][0]
+                let coord_y = temp_data[j][1]
+                requested_ctx.fillStyle = "#e8e354"
+                requested_ctx.fillRect(coord_x - 3, coord_y - 3, 6, 6);
+            }
+        } else {
+            requested_ctx.fillStyle = colors[i * 2]
+            let coord_1_x = temp_data[0][0]
+            let coord_1_y = temp_data[0][1]
+            requested_ctx.fillRect(coord_1_x - 3, coord_1_y - 3, 6, 6);
 
-    for (let i = 0; i < colors.length; i++) {
-        requested_ctx.fillStyle = colors[i]
-        requested_ctx.fillRect(final_data[index].coords[i][0] - 3, final_data[index].coords[i][1] - 3, 6, 6);
+            for (let j = 1; j < temp_data.length - 1; j++) {
+                let coord_x = temp_data[j][0]
+                let coord_y = temp_data[j][1]
+                requested_ctx.fillStyle = "#e8e354"
+                requested_ctx.fillRect(coord_x - 3, coord_y - 3, 6, 6);
+
+            }
+    
+            requested_ctx.fillStyle = colors[i * 2 + 1]
+            let coord_2_x = temp_data[temp_data.length - 1][0]
+            let coord_2_y = temp_data[temp_data.length - 1][1]
+            requested_ctx.fillRect(coord_2_x - 3, coord_2_y - 3, 6, 6);
+        }
     }
 
 }
@@ -237,54 +318,159 @@ requested_frames.addEventListener("mousemove", function(e) {
     zoomctx.lineTo(200 + 10, 100);
     zoomctx.strokeStyle = '#DB14C1';
     zoomctx.stroke()
-    // zoom.style.display = "block"
 })
+
+function matrix_vec_mult(matrix, vec) {
+    let resulting_vec = []
+    for (let i = 0; i < matrix.length; i++) {
+        let quantity = 0;
+        for (let j = 0;  j < matrix.length; j++) {
+            quantity += matrix[i][j] * vec[j]
+        }
+        resulting_vec.push(quantity)
+    }
+    return resulting_vec
+}
+function mm_to_px(length) {
+    const px_to_mm_ratio = 424 / 19
+    return length * px_to_mm_ratio
+}
+const l2 = mm_to_px(2.22), 
+    l3 = l2 + mm_to_px(2),
+    l4 = l2 + mm_to_px(3.96),
+    l5 = mm_to_px(8),
+    l6 = mm_to_px(0.858),
+    l7 = mm_to_px(1.49),
+    l8 = mm_to_px(2.29), 
+    l9 = mm_to_px(5.23)
+
+function computeInitialLengths(l1) {
+
+    let pts = [
+        [l1 / 2, -l2, 1],
+        [l1 / 2, -l3, 1],
+        [l1 / 2, -l4, 1],
+        [l6, -l5, 1],
+        [l1 - l6, -l5, 1], 
+        [-l7, -l8, 1],
+        [l1 + l7, -l8, 1],
+        [-l7, -l9, 1],
+        [l1 + l7, -l9, 1]
+    ]
+    return pts
+}
+function computeGripperPoints(point1, point2) {
+    let point_list = [[...point1], [...point2]]
+    point1[1] *= -1
+    point2[1] *= -1
+    let x_prime = point2[0] - point1[0]
+    let y_prime = point2[1] - point1[1]
+    let d_vec = [point1[0], point1[1]]
+    let theta = Math.atan2(y_prime, x_prime)
+
+    let transformation_matrix = [
+        [Math.cos(theta), - Math.sin(theta), d_vec[0]],
+        [Math.sin(theta), Math.cos(theta), d_vec[1]],
+        [0, 0, 1]
+    ]
+    let l1 = Math.sqrt(Math.pow(x_prime, 2) + Math.pow(y_prime, 2))
+    let gripper_coords = computeInitialLengths(l1)
+    for (let i = 0; i < gripper_coords.length; i++) {
+        let temp = matrix_vec_mult(transformation_matrix, gripper_coords[i])
+        temp[1] *= -1
+        point_list.push(temp);
+    }
+
+    return point_list
+}
+
+function computeNeedlePoints(point1, point2) {
+    let point_list = [point1]
+    let mid = [(point1[0] + point2[0]) / 2, (point1[1] + point2[1]) / 2]
+    point_list.push([(point1[0] + mid[0]) / 2, (point1[1] + mid[1]) / 2])
+    point_list.push(mid)
+    point_list.push([(point2[0] + mid[0]) / 2, (point2[1] + mid[1]) / 2])
+    point_list.push(point2);
+    return point_list
+}
 
 function getMousePosition(canvas, event) {
     let rect = canvas.getBoundingClientRect();
     let x = event.clientX - rect.left;
     let y = event.clientY - rect.top;
-    final_data[current_frame].coords[current_point] = [x, y];
-    document.getElementById("pointIndicator").innerText = `Choosing: ${(current_point + 1) % colors.length}`
+    agent_points[current_frame][2 * current_agent + current_point] = [x, y]
+    document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${(current_point + 1) % 2}`
     console.log(`Frame: ${current_frame}
                 Coordinate x: ${x}
                 Coordinate y: ${y}`);
-    requested_ctx.fillStyle = colors[current_point]
-    requested_ctx.fillRect(x, y, 4, 4);
-    put_image(current_frame);
-    current_point = (current_point + 1) % colors.length;
+
+    current_point = (current_point + 1) % 2
+    
+    requested_ctx.fillStyle = colors[2 * current_agent + current_point]
+    fill_points(current_frame)
+}
+
+function fill_points(index) {
+    requested_ctx.putImageData(frames[index], 0, 0);
+    if (usingDishMask) {
+        requested_ctx.fillStyle = "black"
+        requested_ctx.beginPath();
+        requested_ctx.arc(center[0], center[1], radius,0, 2 * Math.PI, true);
+        requested_ctx.rect(0, 0, requested_frames.width, requested_frames.height);
+        requested_ctx.fill();
+    }
+
+    let points = agent_points[index]
+    for (let i = 0; i < points.length; i++) {
+        requested_ctx.fillStyle = colors[i]
+        let x = points[i][0]
+        let y = points[i][1]
+        requested_ctx.fillRect(x - 3, y - 3, 6, 6);
+    }
+}
+
+function computePoints() {
+    for (let i = 0; i < agent_nums; i++) {
+        let point_1 = agent_points[current_frame][2 * i]
+        let point_2 = agent_points[current_frame][2 * i + 1]
+        if (agents[i].agent_type == "Gripper") {
+
+            final_data[current_frame].coords[agents[i].agent_name] = computeGripperPoints(point_1, point_2);
+        } else {
+            final_data[current_frame].coords[agents[i].agent_name] = computeNeedlePoints(point_1, point_2);
+            
+        }
+    }
+
+    put_image(current_frame)
 }
 
 window.addEventListener('keydown', event => {
-    if (event.code === "KeyD") {
-        current_point = (current_point + 1) % colors.length;
-        document.getElementById("pointIndicator").innerText = `Choosing: ${current_point}`
-    } else if (event.code === "KeyA") {
-        if (current_point > 0) {
-            current_point = (current_point - 1) % colors.length;
-        } else {
-            current_point = colors.length - 1;
-        }
-        document.getElementById("pointIndicator").innerText = `Choosing: ${current_point}`
-    } else if (event.code === "ArrowRight") {
-        move_right();
-    } else if (event.code === "ArrowLeft") {
-        move_left();
-    } else if (event.code === "ArrowUp") {
-        event.preventDefault();
-        move_up();
-    } else if (event.code === "ArrowDown") {
-        event.preventDefault();
-        move_down();
+    if (event.code === "KeyR") {
+        current_agent = (current_agent + 1) % agents.length
+        document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${current_point}`
+        console.log(`Choosing: ${agents[current_agent].agent_name}, point ${current_point}`) 
+    } else if (event.code === "KeyE") {
+        computePoints()
+    } else if (event.code === "KeyD") {
+        current_point = (current_point + 1) % 2;
+        document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${current_point}`
+
+    } else if (event.code === "KeyZ") {
+        let prevPoints = final_data[current_frame - 1].coords;
+        Object.keys(prevPoints).forEach((elem, index) => {
+            let cur = prevPoints[elem]
+            for (let i = 0; i < cur.length; i++) {
+                final_data[current_frame].coords[elem][i] = [...cur[i]]
+            }
+        })
+        put_image(current_frame)
     }
 })
 
-function remove_point(element) {
-    let num = parseInt(element.textContent.split(" ")[1])
-    final_data[current_frame].coords.splice(num, 1);
-    put_image(current_frame);
-}
 
+
+// these are fine
 function exportJson(link) {
     let final_obj = {
         name: filename,
@@ -293,6 +479,7 @@ function exportJson(link) {
         frameRadius: radius, 
         frameRate: framerate,
         frameColors: colors,
+        agents: agents,
         data: final_data,
     }
     let data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(final_obj));
@@ -322,34 +509,6 @@ function selectDishMask() {
     } else if (dishDetails.style.display == "block") {
         dishDetails.style.display = "none"
     }
-}
-
-function move_up() {
-    for (let i = 0; i < final_data[current_frame].coords.length; i++) {
-        final_data[current_frame].coords[i][1] -= 0.5;
-    }
-    put_image(current_frame)
-}
-
-function move_down() {
-    for (let i = 0; i < final_data[current_frame].coords.length; i++) {
-        final_data[current_frame].coords[i][1] += 0.5;
-    }
-    put_image(current_frame)
-}
-
-function move_right() {
-    for (let i = 0; i < final_data[current_frame].coords.length; i++) {
-        final_data[current_frame].coords[i][0] += 0.5;
-    }
-    put_image(current_frame)
-}
-
-function move_left() {
-    for (let i = 0; i < final_data[current_frame].coords.length; i++) {
-        final_data[current_frame].coords[i][0] -= 0.5;
-    }
-    put_image(current_frame)
 }
 
 function toggleZoom() {
