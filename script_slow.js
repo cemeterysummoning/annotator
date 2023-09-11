@@ -458,12 +458,7 @@ window.addEventListener('keydown', event => {
 
     } else if (event.code === "KeyZ") {
         let prevPoints = final_data[current_frame - 1].coords;
-        Object.keys(prevPoints).forEach((elem, index) => {
-            let cur = prevPoints[elem]
-            for (let i = 0; i < cur.length; i++) {
-                final_data[current_frame].coords[elem][i] = [...cur[i]]
-            }
-        })
+        final_data[current_frame].coords = Object.assign({}, prevPoints)
         put_image(current_frame)
     }
 })
