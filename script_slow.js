@@ -204,12 +204,10 @@ function next_frame() {
     } else {
         request_input.value = current_frame
         put_image(current_frame)
-        
     }
 }
 
 function back_frame() {
-    computePoints();
     current_agent = 0;
     current_point = 0
     current_frame = parseInt(request_input.value) - 1
@@ -377,9 +375,11 @@ function computeGripperPoints(point1, point2) {
     let gripper_coords = computeInitialLengths(l1)
     for (let i = 0; i < gripper_coords.length; i++) {
         let temp = matrix_vec_mult(transformation_matrix, gripper_coords[i])
-        temp[1] *= -1
+        temp[1] = temp[1] < 0 ? temp[1] *= -1 : temp[1]
         point_list.push(temp);
     }
+    point1[1] *= -1
+    point2[1] *= -1
 
     return point_list
 }
@@ -422,6 +422,7 @@ function fill_points(index) {
 
     let points = agent_points[index]
     for (let i = 0; i < points.length; i++) {
+        console.log(points[i])
         requested_ctx.fillStyle = colors[i]
         let x = points[i][0]
         let y = points[i][1]
@@ -457,9 +458,11 @@ window.addEventListener('keydown', event => {
         document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${current_point}`
 
     } else if (event.code === "KeyZ") {
-        let prevPoints = final_data[current_frame - 1].coords;
-        final_data[current_frame].coords = Object.assign({}, prevPoints)
-        put_image(current_frame)
+        let prevPoints = agent_points[current_frame - 1];
+        for (let i = 0; i < prevPoints.length; i++) {
+            agent_points[current_frame][i] = [...prevPoints[i]]
+        }
+        fill_points(current_frame)
     }
 })
 
