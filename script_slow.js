@@ -199,7 +199,8 @@ function next_frame() {
     computePoints();
     current_frame = parseInt(request_input.value) + 1
     current_agent = 0;
-    current_point = 0
+    current_point = 0;
+    resetChoice();
     if (current_frame >= frames.length) {
         alert("No more frames left");
     } else {
@@ -212,6 +213,7 @@ function back_frame() {
     current_agent = 0;
     current_point = 0
     current_frame = parseInt(request_input.value) - 1
+    resetChoice();
     if (current_frame < 0) {
         alert("No more frames left");
     } else {
@@ -516,4 +518,11 @@ function toggleZoom() {
     } else {
         zoom.style.display = "block";
     }
+}
+
+function resetChoice() {
+    focused_agent = 0;
+    current_point = 0;
+    current_agent = 0;
+    document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${current_point}`;
 }
