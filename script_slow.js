@@ -43,6 +43,7 @@ function returningsubmit() {
             let content = e.target.result;
             let intern = JSON.parse(content);
             final_data = intern.data;
+            agent_nums = final_data.agents.length;
             colors = intern.frameColors;
             radius = intern.frameRadius;
             center = intern.frameCenter;
