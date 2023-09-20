@@ -42,16 +42,19 @@ function returningsubmit() {
         fileRead.onload = function(e) {
             let content = e.target.result;
             let intern = JSON.parse(content);
+            console.log(intern);
             final_data = intern.data;
-            agent_nums = final_data.agents.length;
             colors = intern.frameColors;
             radius = intern.frameRadius;
             center = intern.frameCenter;
             filename = intern.name;
             agents = intern.agents;
+            agent_nums = agents.length;
+            console.log(agents);
             usingDishMask = radius ? true : false
+            console.log(intern.agentPoints)
+            agent_points = intern.agentPoints;
         }
-
         document.getElementById("video").src = URL.createObjectURL(input.files[0]);
         fileRead.readAsText(file_json[0])
         document.getElementById("collection").style.display = "block";
@@ -83,6 +86,14 @@ function newsubmit() {
             alert("Must choose a number of agents")
         } 
         framerate = document.getElementById("framenum").value; 
+        for (let i = 0; i < agent_nums; i++) {
+            let type = document.getElementById(`agent${i}`).value;
+            agents.push({
+                agent_id: i,
+                agent_type: type,
+                agent_name: `${i}_${type}`
+            })
+        }
 
         init();
     }
@@ -129,17 +140,18 @@ function init() {
         requested_frames.height = frames[0].height
         video_dim = [frames[0].width, frames[0].height]
 
-        for (let i = 0; i < agent_nums; i++) {
-            let type = document.getElementById(`agent${i}`).value;
-            agents.push({
-                agent_id: i,
-                agent_type: type,
-                agent_name: `${i}_${type}`
-            })
+        if (!(agent_points.length)) {
+            for (let i = 0; i < frames.length; i++) {
+                let temp = []
+                for (let j = 0; j < agent_nums * 2; j++) {
+                    temp.push([0, 0])
+                }
+                agent_points.push(temp)
+            }
+            // agent_points = Array(frames.length).fill(Array(agent_nums * 2).fill([0, 0]))
         }
-        agent_points = Array(frames.length).fill(Array(agent_nums * 2).fill([0, 0]))
+        
         document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${current_point}`
-
         
         if (final_data.length != frames.length) {
 
@@ -216,6 +228,7 @@ function back_frame() {
     resetChoice();
     if (current_frame < 0) {
         alert("No more frames left");
+        current_frame = 0;
     } else {
         request_input.value = current_frame
         put_image(current_frame)
@@ -394,6 +407,7 @@ function computeNeedlePoints(point1, point2) {
     point_list.push(mid)
     point_list.push([(point2[0] + mid[0]) / 2, (point2[1] + mid[1]) / 2])
     point_list.push(point2);
+    
     return point_list
 }
 
@@ -401,7 +415,9 @@ function getMousePosition(canvas, event) {
     let rect = canvas.getBoundingClientRect();
     let x = event.clientX - rect.left;
     let y = event.clientY - rect.top;
-    agent_points[current_frame][2 * current_agent + current_point] = [x, y]
+    console.log(agent_points)
+    agent_points[current_frame][2 * current_agent + current_point] = [...[x, y]]
+    console.log(agent_points)
     document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${(current_point + 1) % 2}`
     console.log(`Frame: ${current_frame}
                 Coordinate x: ${x}
@@ -425,7 +441,6 @@ function fill_points(index) {
 
     let points = agent_points[index]
     for (let i = 0; i < points.length; i++) {
-        console.log(points[i])
         requested_ctx.fillStyle = colors[i]
         let x = points[i][0]
         let y = points[i][1]
@@ -461,7 +476,7 @@ window.addEventListener('keydown', event => {
         document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${current_point}`
 
     } else if (event.code === "KeyZ") {
-        let prevPoints = agent_points[current_frame - 1];
+        let prevPoints = [...agent_nums.agent_points[current_frame - 1]];
         for (let i = 0; i < prevPoints.length; i++) {
             agent_points[current_frame][i] = [...prevPoints[i]]
         }
@@ -482,6 +497,7 @@ function exportJson(link) {
         frameColors: colors,
         agents: agents,
         data: final_data,
+        agentPoints: agent_points
     }
     let data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(final_obj));
     link.setAttribute("href", "data:" + data);
