@@ -148,6 +148,7 @@ function init() {
                 }
                 agent_points.push(temp)
             }
+            // doing array.fill fills the array with the rereference to something, not a copy of the value
             // agent_points = Array(frames.length).fill(Array(agent_nums * 2).fill([0, 0]))
         }
         
@@ -476,7 +477,7 @@ window.addEventListener('keydown', event => {
         document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${current_point}`
 
     } else if (event.code === "KeyZ") {
-        let prevPoints = [...agent_nums.agent_points[current_frame - 1]];
+        let prevPoints = [...agent_points[current_frame - 1]];
         for (let i = 0; i < prevPoints.length; i++) {
             agent_points[current_frame][i] = [...prevPoints[i]]
         }
