@@ -419,15 +419,21 @@ function getMousePosition(canvas, event) {
     console.log(agent_points)
     agent_points[current_frame][2 * current_agent + current_point] = [...[x, y]]
     console.log(agent_points)
-    document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${(current_point + 1) % 2}`
     console.log(`Frame: ${current_frame}
                 Coordinate x: ${x}
                 Coordinate y: ${y}`);
 
-    current_point = (current_point + 1) % 2
+    if (current_point == 1) {
+        current_agent = (current_agent + 1) % agents.length;
+        current_point = 0
+    } else {
+        current_point += 1
+    }
     
     requested_ctx.fillStyle = colors[2 * current_agent + current_point]
     fill_points(current_frame)
+    document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${current_point}`
+
 }
 
 function fill_points(index) {
@@ -476,12 +482,13 @@ window.addEventListener('keydown', event => {
         current_point = (current_point + 1) % 2;
         document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${current_point}`
 
-    } else if (event.code === "KeyZ") {
+    } else if (event.code === "KeyW") {
         let prevPoints = [...agent_points[current_frame - 1]];
         for (let i = 0; i < prevPoints.length; i++) {
             agent_points[current_frame][i] = [...prevPoints[i]]
         }
-        fill_points(current_frame)
+        computePoints()
+        put_image(current_frame)
     }
 })
 
