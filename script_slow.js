@@ -492,7 +492,30 @@ window.addEventListener('keydown', event => {
     }
 })
 
-
+window.addEventListener('keydown', event => {
+    if (event.code === "ArrowUp") {
+        console.log("here")
+        event.preventDefault();
+        agent_points[current_frame][current_agent * 2][1] -= 1
+        agent_points[current_frame][current_agent * 2 + 1][1] -= 1
+        computePoints()
+    } else if (event.code === "ArrowDown") {
+        event.preventDefault()
+        agent_points[current_frame][current_agent * 2][1] += 1
+        agent_points[current_frame][current_agent * 2 + 1][1] += 1
+        computePoints()
+    } else if (event.code === "ArrowLeft") {
+        event.preventDefault()
+        agent_points[current_frame][current_agent * 2][0] -= 1
+        agent_points[current_frame][current_agent * 2 + 1][0] -= 1
+        computePoints()
+    } else if (event.code === "ArrowRight") {
+        event.preventDefault()
+        agent_points[current_frame][current_agent * 2][0] += 1
+        agent_points[current_frame][current_agent * 2 + 1][0] += 1
+        computePoints()
+    }
+})
 
 // these are fine
 function exportJson(link) {
