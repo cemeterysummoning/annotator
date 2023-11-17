@@ -123,7 +123,7 @@ document.getElementById("numagents").addEventListener("change", function() {
 })
 
 function init() {
-    
+    document.body.style.zoom = "70%";
     video = document.getElementById("video");
     VideoToFrames.getFrames(video.src, framerate, VideoToFramesMethod.fps).then(function(frames_data) {
         frames_data.forEach(function (frame) {
@@ -478,7 +478,7 @@ window.addEventListener('keydown', event => {
         console.log(`Choosing: ${agents[current_agent].agent_name}, point ${current_point}`) 
     } else if (event.code === "KeyE") {
         computePoints()
-    } else if (event.code === "KeyD") {
+    } else if (event.code === "KeyQ") {
         current_point = (current_point + 1) % 2;
         document.getElementById("pointIndicator").innerText = `Choosing: ${agents[current_agent].agent_name}, point ${current_point}`
 
@@ -494,7 +494,6 @@ window.addEventListener('keydown', event => {
 
 window.addEventListener('keydown', event => {
     if (event.code === "ArrowUp") {
-        console.log("here")
         event.preventDefault();
         agent_points[current_frame][current_agent * 2][1] -= 1
         agent_points[current_frame][current_agent * 2 + 1][1] -= 1
@@ -514,8 +513,37 @@ window.addEventListener('keydown', event => {
         agent_points[current_frame][current_agent * 2][0] += 1
         agent_points[current_frame][current_agent * 2 + 1][0] += 1
         computePoints()
+    } else if (event.code === "KeyA") {
+        event.preventDefault()
+        rotate_agent(0.05)
+    } else if (event.code === "KeyD") {
+        event.preventDefault()
+        rotate_agent(-0.05)
     }
 })
+
+
+function rotate_agent(theta) {
+    let center = [0, 0]
+    let new_points = []
+    let cur_agent = agents[current_agent]
+    let cur_points = final_data[current_frame].coords[cur_agent.agent_name]
+    if (cur_agent.agent_type === "Gripper") {
+        center = final_data[current_frame].coords[cur_agent.agent_name][3]
+    } else if (cur_agent.agent_type === "Needle") {
+        center = final_data[current_frame].coords[cur_agent.agent_name][2]
+    }
+
+    for (let i = 0; i < cur_points.length; i++) {
+        let point_0 = cur_points[i]
+        let new_x = (point_0[0] - center[0]) * Math.cos(theta) - (point_0[1] - center[1]) * Math.sin(theta) + center[0]
+        let new_y = (point_0[0] - center[0]) * Math.sin(theta) + (point_0[1] - center[1]) * Math.cos(theta) + center[1]
+        new_points.push([new_x, new_y])
+    }
+
+    final_data[current_frame].coords[cur_agent.agent_name] = new_points
+    put_image(current_frame)
+}
 
 // these are fine
 function exportJson(link) {

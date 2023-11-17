@@ -73,27 +73,34 @@
         <div id="annotate" style="display: none">
             <button id="back">←</button><input type="number" id="requestframe" type="text"><button id="next">→</button>
             <br> <br>
-            <canvas id="specificframe" width="800" height="450" placeholder="frame number here"></canvas>
-            <fieldset>
-                <legend>
-                    Keybinds
-                </legend>
-                <kbd>Space</kbd> Next frame <br>
-                <kbd>b</kbd> Last frame <br>
-                <kbd>w</kbd> Same points as last frame <br>
-                <kbd>d</kbd> Next point <br>
-                <kbd>r</kbd> Next agent <br>
-                <kbd>e</kbd> Compute points
-            </fieldset>
-            <div id="colorLegend">
-            </div>
+            <canvas id="specificframe" width="800" height="450" placeholder="frame number here" ></canvas>
+            
             <canvas id="zoom" width="400" height="200" style="position: absolute; top: 0; left: 0; display: block;"></canvas>
-            <p id="pointIndicator">Choosing: </p>
-            <br>
-            <a id="exportJSON" onclick="exportJson(this);" class="btn" style="color: rgb(35, 129, 160)"><i class="icon-download"></i> export json</a>
-            <br>
-            <input type="checkbox" id="togglezoom" name="togglezoom" onclick="toggleZoom()" value="1">
-            <label for="togglezoom">Toggle zoom window</label>
+            <div style="padding-left: 5px">
+                <fieldset">
+                    <legend>
+                        Keybinds
+                    </legend>
+                    <kbd>Space</kbd> Next frame <br>
+                    <kbd>b</kbd> Last frame <br>
+                    <kbd>w</kbd> Same points as last frame <br>
+                    <kbd>q</kbd> Next point <br>
+                    <kbd>r</kbd> Next agent <br>
+                    <kbd>e</kbd> Compute points <br>
+                    <kbd>a</kbd> Rotate counterclockwise<br>
+                    <kbd>d</kbd> Rotate clockwise <br>
+                    Arrow keys: Rigid translation
+                </fieldset>
+                <br> <br>
+                <div id="colorLegend">
+                </div>
+                <p id="pointIndicator">Choosing: </p>
+                <br>
+                <a id="exportJSON" onclick="exportJson(this);" class="btn" style="color: rgb(35, 129, 160)"><i class="icon-download"></i> export json</a>
+                <br>
+                <input type="checkbox" id="togglezoom" name="togglezoom" onclick="toggleZoom()" value="1">
+                <label for="togglezoom">Toggle zoom window</label>
+            </div>
         </div>
     </div>
     <script src="frames.js"></script>
