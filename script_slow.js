@@ -123,7 +123,7 @@ document.getElementById("numagents").addEventListener("change", function() {
 })
 
 function init() {
-    document.body.style.zoom = "70%";
+    // document.body.style.zoom = "70%";
     video = document.getElementById("video");
     VideoToFrames.getFrames(video.src, framerate, VideoToFramesMethod.fps).then(function(frames_data) {
         frames_data.forEach(function (frame) {
