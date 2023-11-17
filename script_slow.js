@@ -515,10 +515,10 @@ window.addEventListener('keydown', event => {
         computePoints()
     } else if (event.code === "KeyA") {
         event.preventDefault()
-        rotate_agent(0.05)
+        rotate_agent(-0.025)
     } else if (event.code === "KeyD") {
         event.preventDefault()
-        rotate_agent(-0.05)
+        rotate_agent(0.025)
     }
 })
 
@@ -542,6 +542,13 @@ function rotate_agent(theta) {
     }
 
     final_data[current_frame].coords[cur_agent.agent_name] = new_points
+    if (cur_agent.agent_type === "Gripper") {
+        agent_points[current_frame][current_agent * 2] = new_points[0]
+        agent_points[current_frame][current_agent * 2 + 1] = new_points[1]
+    } else if (cur_agent.agent_type === "Needle") {
+        agent_points[current_frame][current_agent * 2] = new_points[0]
+        agent_points[current_frame][current_agent * 2 + 1] = new_points[new_points.length - 1]
+    }
     put_image(current_frame)
 }
 
