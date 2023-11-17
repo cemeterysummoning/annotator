@@ -13,7 +13,7 @@ let agents = [];
 let focused_agent = 0;
 let radius;
 let center;
-let colors = ["#32a852", "#b52b2b", "#159ca1", "#f0823e"]
+let colors = ["#ff0074", "#b52b2b", "#159ca1", "#f0823e"]
 let final_data = []
 let frames = [];
 let current_point = 0;
