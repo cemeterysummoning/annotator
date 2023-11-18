@@ -515,10 +515,10 @@ window.addEventListener('keydown', event => {
         computePoints()
     } else if (event.code === "KeyA") {
         event.preventDefault()
-        rotate_agent(-0.025)
+        rotate_agent(-0.01)
     } else if (event.code === "KeyD") {
         event.preventDefault()
-        rotate_agent(0.025)
+        rotate_agent(0.01)
     }
 })
 
